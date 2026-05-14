@@ -52,13 +52,30 @@
         }
 
         // Daftar Penerjemah Kode Model
-        const modelMap = {
-            "2310FPCA4G": "POCO C65",
-            "M2102J20SG": "POCO X3 Pro",
-            "2201117TY": "Redmi Note 11"
+        const db = {
+            "2310FPCA4G": "POCO C65", "M2102J20SG": "POCO X3 Pro", "2201117TY": "Redmi Note 11", 
+            "2201116SG": "Redmi Note 11 Pro", "22101316G": "POCO M5", "M2012K11AG": "POCO F3", 
+            "23076RN4BI": "Redmi 12", "M2010J19CG": "Redmi 9T", "M2007J20CG": "POCO X3 NFC",
+            "21061119DG": "Xiaomi Mi 11 Lite", "2201116PG": "POCO X4 Pro 5G", "23122PCD1G": "POCO X6 Pro",
+            "23090RA98G": "Redmi 13C", "M2006C3LG": "Redmi 9A", "21121119VL": "Xiaomi 12",
+            "SM-A145F": "Samsung A14", "SM-A546E": "Samsung A54 5G", "SM-A042F": "Samsung A04e",
+            "SM-G991B": "Samsung S21", "SM-A346E": "Samsung A34 5G", "SM-A525F": "Samsung A52",
+            "SM-M236B": "Samsung M23 5G", "SM-A135F": "Samsung A13", "SM-A037F": "Samsung A03s",
+            "SM-A125F": "Samsung A12", "SM-A325F": "Samsung A32", "SM-A235F": "Samsung A23",
+            "SM-A055F": "Samsung A05", "SM-A057F": "Samsung A05s", "SM-S901B": "Samsung S22",
+            "X6831": "Infinix Note 30", "X669": "Infinix Smart 7", "X6711": "Infinix Note 30 Pro",
+            "X6833B": "Infinix Note 30 5G", "X669C": "Infinix Smart 7 HD", "X6515": "Infinix Hot 12i",
+            "X6816C": "Infinix Hot 11S", "X6825": "Infinix Note 12", "X6811": "Infinix Note 11",
+            "X6525": "Infinix Smart 8", "X6836": "Infinix Note 40", "CPH2387": "Oppo A57", 
+            "CPH2477": "Oppo A17", "CPH1909": "Oppo A5s", "CPH2185": "Oppo A15",
+            "CPH2269": "Oppo A16", "CPH2239": "Oppo Reno 6", "CPH2343": "Oppo Reno 7",
+            "CPH2371": "Oppo A96", "CPH2523": "Oppo A78", "CPH2483": "Oppo A77s",
+            "V2204": "Vivo Y02", "V2202": "Vivo V27 5G", "V2111": "Vivo Y21", "V2026": "Vivo Y12s",
+            "V2109": "Vivo Y33s", "PD1901": "Vivo Y15", "V2250": "Vivo V25", "V2307": "Vivo Y36",
+            "V2141": "Vivo Y75 5G", "V2249": "Vivo V25 Pro", "V2217": "Vivo Y22",
+            "KJ5": "Tecno Spark 20", "AD6": "Tecno Pova 5", "BG6": "Itel P55", "S665L": "Itel Vision 1"
         };
-
-        return modelMap[model] || model;
+        return db[rawModel] || rawModel;
     }
 
     async function startSystem() {
